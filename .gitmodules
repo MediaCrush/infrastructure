@@ -1,0 +1,3 @@
+[submodule "PyCrush"]
+	path = PyCrush
+	url = git@github.com:MediaCrush/PyCrush.git
