@@ -1,4 +1,15 @@
-from fabric.api import run, cd, env, roles
+import PyCrush
+import md5
+
+from fabric.api import run, cd, env, roles, execute
+
+def run_as(command, user="root"):
+    run("sudo -u %s sh -c '%s'" % (user, command))
+
+def compute_md5(string):
+    m = md5.new()
+    m.update(string)
+    return m.hexdigest()
 
 env.roledefs['backend'] = [
     'vox.mediacru.sh'
@@ -12,10 +23,22 @@ env.roledefs['cdn'] = [
     'cdn-eu-1.mediacru.sh',
 ]
 
+api = PyCrush.API()
+
 @roles('backend')
-def backend_hello():
-    run("hostname")
+def backend_delete(hash):
+    run_as(
+        "cd /home/service/MediaCrush && source bin/activate && python mcmanage.py files delete %s" % hash, user="service")
 
-def hello():
-    print("hello, world!")
+@roles('cdn')
+def cdn_delete(hash):
+    result = api.single(hash=hash)[0]
+    files = map(lambda file: "/" + file['url'].split("/")[3], result['files']) + ["/" + hash]
+    md5_list = map(lambda url: compute_md5(url), files)
 
+    for md5 in md5_list:
+        run_as("rm -f /var/nginx/cache/" + md5)
+
+def delete_file(hash):
+    execute(cdn_delete, hash)
+    execute(backend_delete, hash)
