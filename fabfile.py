@@ -25,6 +25,12 @@ env.roledefs['cdn'] = [
 
 api = PyCrush.API()
 
+@roles("cdn")
+def cdn_delete_single(f):
+    run_as("rm -f /var/nginx/cache/" + compute_md5("/" + f))
+    run_as("sync")
+
+
 @roles('backend')
 def backend_delete(hash):
     run_as(
@@ -38,6 +44,7 @@ def cdn_delete(hash):
 
     for md5 in md5_list:
         run_as("rm -f /var/nginx/cache/" + md5)
+        run_as("sync")
 
 def delete_file(hash):
     execute(cdn_delete, hash)
