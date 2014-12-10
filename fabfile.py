@@ -20,7 +20,6 @@ env.roledefs['cdn'] = [
     'cdn-us-2.mediacru.sh',
     'cdn-us-3.mediacru.sh',
     'cdn-asia-1.mediacru.sh',
-    'cdn-eu-1.mediacru.sh',
 ]
 
 api = PyCrush.API()
@@ -34,7 +33,7 @@ def cdn_delete_single(f):
 @roles('backend')
 def backend_delete(hash):
     run_as(
-        "cd /home/service/MediaCrush && source bin/activate && python mcmanage.py files delete %s" % hash, user="service")
+        "cd /home/service/MediaCrush && source bin/activate && python mcmanage.py files delete ./%s" % hash, user="service")
 
 @roles('cdn')
 def cdn_delete(hash):
